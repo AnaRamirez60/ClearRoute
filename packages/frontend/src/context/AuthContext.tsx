@@ -1,25 +1,8 @@
 'use client'
 
 import { createContext, useState, useContext, ReactNode, useEffect } from 'react'
-
-// Datos mock de trabajadores
-const MOCK_WORKERS = [
-  { id: '1', email: 'trabajador1@ejemplo.com', password: 'password123', name: 'Juan Pérez' },
-  { id: '2', email: 'trabajador2@ejemplo.com', password: 'password123', name: 'María López' },
-]
-
-type User = {
-  id: string
-  email: string
-  name: string
-}
-
-type AuthContextType = {
-  user: User | null
-  login: (email: string, password: string) => Promise<boolean>
-  logout: () => void
-  isLoading: boolean
-}
+import { AuthContextType, User } from '@/types/types'
+import { MOCK_WORKERS } from '@/data/workers'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
