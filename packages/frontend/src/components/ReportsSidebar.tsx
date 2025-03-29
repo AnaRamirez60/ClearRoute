@@ -157,7 +157,7 @@ const ReportsSidebar: React.FC<ReportsSidebarProps> = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-[350px] sm:w-[450px] overflow-y-auto">
+      <SheetContent side="right" className="overflow-y-auto z-50 bg-white">
         <SheetHeader>
           <SheetTitle>
             {container 

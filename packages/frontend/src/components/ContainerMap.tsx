@@ -1,12 +1,60 @@
 'use client'
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import 'leaflet-routing-machine';
 import { Container, ContainerStatus } from '@/types/types';
+import ReportsSidebar from './ReportsSidebar';
+import { Button } from '@/components/ui/button';
+import { ClipboardList, Map } from 'lucide-react';
+
+// Añadir estilos globales para Leaflet
+const MapStyles = () => {
+  useEffect(() => {
+    // Solo ejecutar en el cliente
+    if (typeof window !== 'undefined') {
+      const style = document.createElement('style');
+      style.innerHTML = `
+        .leaflet-container {
+          z-index: 5 !important; /* Valor bajo para el mapa base */
+        }
+        .leaflet-pane {
+          z-index: 5 !important; /* Valor bajo para los panes del mapa */
+        }
+        .leaflet-overlay-pane {
+          z-index: 6 !important;
+        }
+        .leaflet-marker-pane {
+          z-index: 7 !important;
+        }
+        .leaflet-tooltip-pane {
+          z-index: 8 !important;
+        }
+        .leaflet-popup-pane {
+          z-index: 9 !important;
+        }
+        .leaflet-control {
+          z-index: 10 !important;
+        }
+        /* Estilos para otros componentes UI para asegurar que estén por encima */
+        .ui-overlay {
+          position: relative;
+          z-index: 1000 !important;
+        }
+      `;
+      document.head.appendChild(style);
+      
+      return () => {
+        document.head.removeChild(style);
+      };
+    }
+  }, []);
+  
+  return null;
+};
 
 // Datos mock de contenedores
 const mockContainers: Container[] = [
@@ -32,7 +80,6 @@ interface RoutingMachineProps {
 
 const RoutingMachine: React.FC<RoutingMachineProps> = ({ containers }) => {
   const map = useMap();
-  // Añadir referencia para el control de rutas
   const routingControlRef = useRef<L.Routing.Control | null>(null);
   
   useEffect(() => {
@@ -48,7 +95,7 @@ const RoutingMachine: React.FC<RoutingMachineProps> = ({ containers }) => {
       }
     }
     
-    // Filtrar contenedores que no están en mantenimiento y ordenar por nivel de llenado (de más lleno a menos)
+    // Filtrar contenedores que no están en mantenimiento y ordenar por nivel de llenado
     const containersToVisit = containers
       .filter(c => c.status !== 'Mantenimiento')
       .sort((a, b) => b.fillLevel - a.fillLevel);
@@ -76,11 +123,21 @@ const RoutingMachine: React.FC<RoutingMachineProps> = ({ containers }) => {
         router: L.Routing.osrmv1({
           serviceUrl: 'https://router.project-osrm.org/route/v1',
           profile: 'driving'
-        })
+        }),
+        // Evitar que el panel de instrucciones aparezca
+        show: false,
+        addWaypoints: false,
+        collapsible: true,
       });
       
       routingControl.addTo(map);
       routingControlRef.current = routingControl;
+      
+      // Ocultar el panel de instrucciones si existe
+      const container = routingControl.getContainer();
+      if (container) {
+        container.style.display = 'none';
+      }
     } catch (error) {
       console.error("Error al crear la ruta:", error);
     }
@@ -104,7 +161,9 @@ const RoutingMachine: React.FC<RoutingMachineProps> = ({ containers }) => {
 const ContainerMap: React.FC = () => {
   const [iconMap, setIconMap] = useState<Record<string, L.Icon>>({});
   const [showRoute, setShowRoute] = useState(false);
-
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedContainer, setSelectedContainer] = useState<Container | null>(null);
+  
   // Inicializar iconos para los marcadores
   useEffect(() => {
     const icons: Record<string, L.Icon> = {};
@@ -131,54 +190,107 @@ const ContainerMap: React.FC = () => {
     return <div>Cargando mapa...</div>;
   }
 
+  // Función para mostrar los reportes de un contenedor específico
+  const handleContainerClick = (container: Container) => {
+    setSelectedContainer(container);
+    setIsSidebarOpen(true);
+  };
+
+  // Función para mostrar todos los reportes
+  const handleShowAllReports = () => {
+    setSelectedContainer(null);
+    setIsSidebarOpen(true);
+  };
+
   return (
-    <div style={{ height: '500px', width: '100%', marginTop: '20px' }}>
-      <div className="mb-4">
-        <button
-          onClick={() => setShowRoute(!showRoute)}
-          className="bg-green-700 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+    <div className="relative" style={{ height: '500px', width: '100%', marginTop: '20px' }}>
+      {/* Estilos globales para Leaflet */}
+      <MapStyles />
+      
+      {/* Botones de control (encima del mapa) */}
+      <div className="absolute top-0 right-0 flex gap-2 m-2 z-10">
+        <Button
+          variant="outline"
+          size="sm"
+          className="bg-white"
+          onClick={handleShowAllReports}
         >
-          {showRoute ? 'Ocultar Ruta' : 'Mostrar Ruta Óptima'}
-        </button>
+          <ClipboardList className="h-4 w-4 mr-1" />
+          Ver reportes
+        </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="bg-white"
+          onClick={() => setShowRoute(!showRoute)}
+        >
+          <Map className="h-4 w-4 mr-1" />
+          {showRoute ? 'Ocultar Ruta' : 'Mostrar Ruta'}
+        </Button>
       </div>
       
-      <MapContainer 
-        center={position} 
-        zoom={15} 
-        scrollWheelZoom={true}
-        style={{ height: '100%', width: '100%', borderRadius: '8px' }}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        
-        {mockContainers.map(container => (
-          <Marker 
-            key={container.id} 
-            position={[container.lat, container.lng]}
-            icon={iconMap[getMarkerColor(container.fillLevel, container.status)]}
-          >
-            <Popup>
-              <div>
-                <h3 className="font-bold">{container.type}</h3>
-                <p><strong>Estado:</strong> {container.status}</p>
-                <p><strong>Nivel de llenado:</strong> {container.fillLevel}%</p>
-                <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                  <div 
-                    className={`h-2.5 rounded-full ${
-                      container.fillLevel > 75 ? 'bg-red-600' : 
-                      container.fillLevel > 50 ? 'bg-orange-500' : 'bg-green-600'}`}
-                    style={{ width: `${container.fillLevel}%` }}
-                  ></div>
+      {/* Contenedor del mapa con z-index controlado */}
+      <div className="map-container" style={{ height: '100%', width: '100%', position: 'relative', zIndex: 5 }}>
+        <MapContainer 
+          center={position} 
+          zoom={15} 
+          style={{ height: '100%', width: '100%' }}
+          zoomControl={false} // Desactivamos el control de zoom predeterminado
+          attributionControl={false} // Desactivamos la atribución predeterminada
+          className="rounded-lg"
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          
+          {mockContainers.map(container => (
+            <Marker 
+              key={container.id} 
+              position={[container.lat, container.lng]}
+              icon={iconMap[getMarkerColor(container.fillLevel, container.status)]}
+              eventHandlers={{
+                click: () => handleContainerClick(container)
+              }}
+            >
+              <Popup>
+                <div>
+                  <h3 className="font-bold">{container.type}</h3>
+                  <p><strong>Estado:</strong> {container.status}</p>
+                  <p><strong>Nivel de llenado:</strong> {container.fillLevel}%</p>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                    <div 
+                      className={`h-2.5 rounded-full ${
+                        container.fillLevel > 75 ? 'bg-red-600' : 
+                        container.fillLevel > 50 ? 'bg-orange-500' : 'bg-green-600'}`}
+                      style={{ width: `${container.fillLevel}%` }}
+                    ></div>
+                  </div>
                 </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-        
-        {showRoute && <RoutingMachine containers={mockContainers} />}
-      </MapContainer>
+              </Popup>
+            </Marker>
+          ))}
+          
+          {showRoute && <RoutingMachine containers={mockContainers} />}
+          
+          {/* Añadimos de nuevo el control de zoom pero en una posición personalizada */}
+          <div className="leaflet-control-container">
+            <div className="leaflet-top leaflet-left">
+              {/* Los controles se añadirán automáticamente aquí */}
+            </div>
+          </div>
+        </MapContainer>
+      </div>
+
+      {/* Sidebar siempre por encima con z-index mucho mayor */}
+      <div className="ui-overlay" style={{ zIndex: 2000, position: 'relative' }}>
+        <ReportsSidebar 
+          isOpen={isSidebarOpen} 
+          onOpenChange={setIsSidebarOpen}
+          container={selectedContainer}
+        />
+      </div>
     </div>
   );
 };
