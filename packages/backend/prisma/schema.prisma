@@ -1,0 +1,73 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Conductores {
+  id              Int    @id @default(autoincrement())
+  cr_nombre       String
+  cr_correo       String    @db.VarChar(50)
+  cr_contrasenia  String    @db.VarChar(260)
+  rutas           Rutas[]
+  tareas          Tareas[]  // Relación implícita a través de cr_conductor_id
+}
+
+model Contenedores {
+  id              BigInt    @id @default(autoincrement())
+  cr_ubicacion    String
+  cr_codigo_qr    String
+  cr_nivel_llenado Int      @default(1)
+  sensores        Sensores[]
+  formularios     Formularios[]
+  tareas          Tareas[]
+}
+
+model Rutas {
+  id               BigInt       @id @default(autoincrement())
+  cr_conductor_id  Int
+  cr_fecha         DateTime
+  cr_detalles      String?
+  conductor        Conductores  @relation(fields: [cr_conductor_id], references: [id])
+  tareas           Tareas[]
+}
+
+model Formularios {
+  id                BigInt       @id @default(autoincrement())
+  cr_contenedor_id  BigInt
+  cr_fecha          DateTime
+  cr_problema       String?
+  cr_descripcion    String?
+  contenedor        Contenedores @relation(fields: [cr_contenedor_id], references: [id])
+}
+
+model Sensores {
+  id                BigInt       @id @default(autoincrement())
+  cr_contenedor_id  BigInt
+  lecturas          Lecturas[]
+  contenedor        Contenedores @relation(fields: [cr_contenedor_id], references: [id])
+}
+
+model Lecturas {
+  id              BigInt    @id @default(autoincrement())
+  cr_sensor_id    BigInt
+  cr_fecha        DateTime
+  cr_distancia    Decimal   @db.Decimal(10,2)
+  sensor          Sensores  @relation(fields: [cr_sensor_id], references: [id])
+}
+
+model Tareas {
+  id                BigInt       @id @default(autoincrement())
+  cr_ruta_id        BigInt
+  cr_contenedor_id  BigInt
+  cr_conductor_id   Int
+  cr_estado         Boolean
+  ruta              Rutas        @relation(fields: [cr_ruta_id], references: [id])
+  contenedor        Contenedores @relation(fields: [cr_contenedor_id], references: [id])
+  conductor         Conductores? @relation(fields: [cr_conductor_id], references: [id])
+}
