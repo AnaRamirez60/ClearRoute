@@ -1,7 +1,6 @@
 'use client'
 
 import ProtectedRoute from '@/components/ProtectedRoute'
-import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import MaxWidthWrapper from '@/components/MaxWidthWrapper'
 import { useAuth } from '@/context/AuthContext'
@@ -13,7 +12,6 @@ const ContainerMap = dynamic(
 )
 
 export default function WorkerDashboard() {
-  const router = useRouter()
 
   const { user } = useAuth() 
 
@@ -32,29 +30,6 @@ export default function WorkerDashboard() {
             <div className="mb-8">
               <p className="text-gray-600 mb-4">Visualiza la ubicación y estado de los contenedores</p>
               <ContainerMap />
-            </div>
-            
-            {/* Sección de acciones disponibles */}
-            <div className="border-4 border-dashed border-gray-200 rounded-lg p-4 mt-6">
-              <h2 className="text-xl font-bold mb-4">Acciones disponibles</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div 
-                  className="bg-white p-6 rounded-lg shadow cursor-pointer hover:shadow-lg"
-                  onClick={() => router.push('/escaner')}
-                >
-                  <h3 className="font-bold text-lg mb-2">Escanear código QR</h3>
-                  <p className="text-gray-600">Escanea un código QR para acceder a un cuestionario</p>
-                </div>
-                
-                <div 
-                  className="bg-white p-6 rounded-lg shadow cursor-pointer hover:shadow-lg"
-                  onClick={() => router.push('/trabajadores/reportes')}
-                >
-                  <h3 className="font-bold text-lg mb-2">Ver reportes</h3>
-                  <p className="text-gray-600">Accede a los reportes de respuestas</p>
-                </div>
-              </div>
             </div>
           </MaxWidthWrapper>
         </main>
