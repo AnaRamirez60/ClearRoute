@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 
 exports.getAllContenedores = async (req, res) => {
   try{
-    const contenedores = await prisma.contenedor.findMany();
+    const contenedores = await prisma.contenedores.findMany();
     res.status(200).json(contenedores);
   } catch (error){
     res.status (500) .json({error: 'Error al obtener los contenedores'});
@@ -13,7 +13,7 @@ exports.getAllContenedores = async (req, res) => {
 exports.getContenedorById = async (req, res) => {
   try{
     const {id} = req.params;
-    const contenedor = await prisma.contenedor.findUnique({
+    const contenedor = await prisma.contenedores.findUnique({
       where: {id: parseInt(id)},
     });
 
@@ -26,31 +26,12 @@ exports.getContenedorById = async (req, res) => {
   }
 };
 
-exports.createContenedor = async (req, res) => {
-  try{
-    const {cr_ubicacion, cr_codigo_qr, cr_nivel_llenado, sensores, formularios, tareas} = req.body;
-    const nuevoContenedor = await prisma.contenedor.create({
-      data: {
-        cr_ubicacion,
-        cr_codigo_qr,
-        cr_nivel_llenado,
-        sensores,
-        formularios,
-        tareas,
-      },
-    });
-
-    res.status(201).json(nuevoContenedor);
-  } catch (error){
-    res.status(500).json({error: 'Error al registrar contenedor'});
-  }
-};
 
 exports.updateContenedor = async (req, res) => {
   try{
     const {id} = req.params;
     const {cr_ubicacion, cr_codigo_qr, cr_nivel_llenado, sensores, formularios, tareas} = req.body;
-    const contenedorActualizado = await prisma.contenedor.update({
+    const contenedorActualizado = await prisma.contenedores.update({
       where: {id: parseInt(id)},
       data: {
         cr_ubicacion,
@@ -71,7 +52,7 @@ exports.updateContenedor = async (req, res) => {
 exports.deleteContenedor = async (req, res) => {
   try{
     const {id} = req.params;
-    await prisma.contenedor.delete({
+    await prisma.contenedores.delete({
       where: {id: parseInt(id)},
     });
 
@@ -81,3 +62,22 @@ exports.deleteContenedor = async (req, res) => {
   }
 }
 
+exports.createContenedor = async (req, res) => {
+  try {
+  const { cr_ubicacion, cr_codigo_qr, cr_nivel_llenado } = req.body;
+  // Convertir cr_nivel_llenado a un entero
+  const nivelLlenadoEntero = parseInt(cr_nivel_llenado);
+  const nuevoContenedor = await prisma.contenedores.create({
+  data: {
+  cr_ubicacion,
+  cr_codigo_qr,
+  cr_nivel_llenado: nivelLlenadoEntero, // Usar el valor entero
+  },
+  });
+
+  res.status(201).json(nuevoContenedor);
+  } catch (error) {
+  console.error("Error al registrar contenedor:", error);
+  res.status(500).json({ error: 'Error al registrar contenedor', details: error.message });
+  }
+ };
