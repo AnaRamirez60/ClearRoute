@@ -1,102 +1,107 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [codigo, setCodigo] = useState("");
+  const [problema, setProblema] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const [foto, setFoto] = useState(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleFileChange = (event) => {
+    setFoto(event.target.files[0]);
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col items-center p-8 font-sans bg-white text-black">
+      {/* Header */}
+      <header className="w-full flex justify-between items-center p-4 border-b bg-green-600 text-white">
+        <div className="flex items-center gap-2">
+          <Image src="/logo.svg" alt="Logo" width={40} height={40} />
+          <h1 className="text-xl font-bold">Clear Routes</h1>
         </div>
+        <a href="/trabajador" className="hover:underline">
+          ¿Eres trabajador de recolección?
+        </a>
+      </header>
+
+      {/* Main */}
+      <main className="w-full max-w-2xl flex flex-col gap-6 mt-10 pb-20">
+        <h2 className="text-3xl font-semibold text-center">Bienvenido a Clear Routes</h2>
+        <p className="text-center text-gray-600">
+          Esta plataforma te permite reportar problemas con los botes de basura. Escanea el código QR del contenedor y describe el problema.
+        </p>
+
+        <label className="block font-medium">Código del basurero</label>
+        <input
+          type="text"
+          value={codigo}
+          onChange={(e) => setCodigo(e.target.value)}
+          className="w-full p-2 border rounded"
+        />
+
+        <label className="block font-medium">Problema</label>
+        <select
+          value={problema}
+          onChange={(e) => setProblema(e.target.value)}
+          className="w-full p-2 border rounded"
+        >
+          <option value="">Selecciona un problema</option>
+          <option value="roto">Contenedor roto</option>
+          <option value="lleno">Contenedor lleno</option>
+          <option value="falta">Falta contenedor</option>
+        </select>
+
+        <label className="block font-medium">Descripción (Opcional)</label>
+        <textarea
+          value={descripcion}
+          onChange={(e) => setDescripcion(e.target.value)}
+          className="w-full p-2 border rounded"
+        ></textarea>
+
+        <label className="block font-medium">Subir Foto</label>
+        <input type="file" onChange={handleFileChange} className="w-full p-2 border rounded" />
+
+        <button className="bg-green-600 text-white px-4 py-2 rounded mt-4 hover:bg-green-700">Enviar Reporte</button>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* Información sobre el proyecto */}
+      <section className="mt-10 w-full max-w-2xl text-center pb-20">
+        <h3 className="text-xl font-semibold">¿Qué es Clear Routes?</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-4">
+          <div>
+            <h4 className="font-medium">¿Para qué?</h4>
+            <p className="text-gray-600">Facilita el reporte de problemas con contenedores de basura.</p>
+          </div>
+          <div>
+            <h4 className="font-medium">¿Cómo funciona?</h4>
+            <p className="text-gray-600">Escanea un código QR y completa un breve formulario.</p>
+          </div>
+          <div>
+            <h4 className="font-medium">Beneficios</h4>
+            <p className="text-gray-600">Mejora la gestión de residuos y mantiene la ciudad limpia.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Preguntas Frecuentes */}
+      <section className="mt-10 w-full max-w-2xl pb-20">
+        <h3 className="text-xl font-semibold">Preguntas Frecuentes</h3>
+        <details className="mt-2 border p-2 rounded">
+          <summary className="cursor-pointer font-medium">¿Cómo escaneo el código QR?</summary>
+          <p className="text-gray-600 mt-2">Usa la cámara de tu teléfono o una aplicación de escaneo.</p>
+        </details>
+        <details className="mt-2 border p-2 rounded">
+          <summary className="cursor-pointer font-medium">¿Qué pasa después de enviar un reporte?</summary>
+          <p className="text-gray-600 mt-2">El reporte será revisado por las autoridades responsables.</p>
+        </details>
+      </section>
+
+      {/* Footer */}
+      <footer className="mt-10 w-full text-center p-6 border-t bg-green-600 text-white">
+        <p>Contacto: support@clearroutes.com</p>
+        <p>&copy; 2025 Clear Routes. Todos los derechos reservados.</p>
       </footer>
     </div>
   );
